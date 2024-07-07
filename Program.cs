@@ -1,6 +1,7 @@
 using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Octokit;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services
@@ -8,7 +9,7 @@ builder.Services
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = GitHubAuthenticationDefaults.AuthenticationScheme;
-    )
+    })
     .AddCookie()
     .AddGitHub(options =>
     {
@@ -16,6 +17,7 @@ builder.Services
         options.ClientId = configuration["ClientId"]!;
         options.ClientSecret = configuration["ClientSecret"]!;
         options.CallbackPath = "/signin-github";
+        options.SaveTokens = true;
     });
 
 builder.Services.AddAuthorization();
@@ -23,14 +25,14 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 app.MapGet("/", async context =>
 {
-    if (context.User is { Identity.IsAuthenticated: true } user)
-    {
-        await context.Response.WriteAsync($"Hello {user.Identity!.Name}");
-    }
-    else
-    {
-        await context.Response.WriteAsync("Hello Anonymous");
-    }
+    var name = context.User is { Identity.IsAuthenticated: true } user ? user.Identity.Name : "Anonymous";
+    await context.Response.WriteAsync($"""
+        <div>Hello {name}</div>
+        <div><a href="/login">Login</a></div>
+        <div><a href="/logout">Logout</a></div>
+        <div><a href="/user">User Information</a></div>
+        <div><a href="/github">Use GitHub Client</a></div>
+        """);
 });
 
 app.MapGet("/login", IResult () =>
@@ -46,7 +48,20 @@ app.MapGet("/logout", IResult () =>
     }));
 
 app.MapGet("/user", async context => 
-    await context.Response.WriteAsync($"Hello context.User!.Identity!.Name!"))
+    await context.Response.WriteAsync($"Hello {context.User!.Identity!.Name}"))
     .RequireAuthorization();
+
+
+app.MapGet("/github", async context => 
+{
+    var token = await context.GetTokenAsync("access_token");
+    var client = new GitHubClient(new ProductHeaderValue("GitHubAuthMinimal"))
+    {
+        Credentials = new Credentials(token)
+    };
+
+    var repoCount = (await client.Repository.GetAllForCurrent()).Count;
+    await context.Response.WriteAsync($"Hello {context.User!.Identity!.Name}, you have {repoCount} repositories!");
+}).RequireAuthorization();
 
 app.Run();

@@ -47,6 +47,24 @@ One part I struggled to understand is the flow of data. Essentially how does a s
 - Challenge is the authentication action and it's controlled by the `DefaultChallengeSceme` scheme. For OAuth this will send a HTTP 302 to the GitHub login page. When that completes the user is redirected back to the application to the callback path specified in the GitHub application. This will then trigger the `SignIn` action.
 - SignIn is _not_ about the act of signing in a user, it's instead about the act of persisting a successful sign in. This is controlled by the `DefaultSignInScheme`. This is commonly a cookie as it's a standard persistence mechanism.
 
+### Accessing GitHub as the User
+
+Once OAuth is working you just need a few tweaks to access GitHub as the user. The first step is to persist the tokens during authentication in the cookies.
+
+```csharp
+options.SaveTokens = true;
+```
+
+Once that is complete then on any authenticated `HttpContext` the tokens can be accessed via the `GetTokenAsync` method.
+
+```csharp
+var token = await context.GetTokenAsync("access_token");
+var client = new GitHubClient(new ProductHeaderValue("GitHubAuthMinimal"))
+{
+    Credentials = new Credentials(token)
+};
+```
+
 ### Good Reads
 
 - [Overview of ASP.NET Core Authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication)
