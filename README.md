@@ -65,8 +65,20 @@ var client = new GitHubClient(new ProductHeaderValue("GitHubAuthMinimal"))
 };
 ```
 
+### No UseAuthentication / UseAuthohrization
+
+This minimal API approach is not using the standard calls of 
+
+```csharp
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+That is because these are automatically registered in minimal APIs when the system detects authentication and authorization being used.
+
 ### Good Reads
 
 - [Overview of ASP.NET Core Authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication)
 - [Overview of the Identity Platform](https://learn.microsoft.com/en-us/entra/fundamentals/identity-fundamental-concepts)
 - [The Authorization request details](https://www.oauth.com/oauth2-servers/authorization/the-authorization-request/)
+- [Middleware automatically added in minimal APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/middleware?view=aspnetcore-8.0)
