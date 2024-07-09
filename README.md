@@ -76,7 +76,7 @@ app.UseAuthorization();
 
 That is because these are automatically registered in minimal APIs when the system detects authentication and authorization being used.
 
-### Good Reads
+## Good Reads
 
 - [Overview of ASP.NET Core Authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication)
 - [Overview of the Identity Platform](https://learn.microsoft.com/en-us/entra/fundamentals/identity-fundamental-concepts)
