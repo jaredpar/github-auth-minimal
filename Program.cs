@@ -52,7 +52,7 @@ app.MapGet("/user", async context =>
     .RequireAuthorization();
 
 
-app.MapGet("/github", async context => 
+app.MapGet("/github", async Task<IResult> (HttpContext context) => 
 {
     var token = await context.GetTokenAsync("access_token");
     var client = new GitHubClient(new ProductHeaderValue("GitHubAuthMinimal"))
@@ -61,7 +61,7 @@ app.MapGet("/github", async context =>
     };
 
     var repoCount = (await client.Repository.GetAllForCurrent()).Count;
-    await context.Response.WriteAsync($"Hello {context.User!.Identity!.Name}, you have {repoCount} repositories!");
+    return Results.Content($"Hello {context.User!.Identity!.Name}, you have {repoCount} repositories!", "text/plain");
 }).RequireAuthorization();
 
 app.Run();
